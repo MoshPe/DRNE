@@ -8,18 +8,29 @@ import os
 
 import tensorflow as tf
 from tensorflow.contrib.tensorboard.plugins import projector
+import networkx as nx
+import matplotlib.pyplot as plt
+from pyvis import network as net
 
 import network, utils
 
 class eni(object):
-    def __init__(self, graph, args, sess):
+    def __init__(self, graph, args, sess, visual, graph_name):
         self.graph = graph
         self.args = args
         self.sess = sess
         self.degree_max = network.get_max_degree(self.graph)
         self.degree = network.get_degree(self.graph)
         self.save_path = os.path.join(self.args.save_path, '{}_{}_{}_{}'.format(self.args.save_suffix, self.args.embedding_size, self.args.alpha, self.args.lamb))
-
+        # G = nx.Graph()
+        # G.add_edges_from(visual)
+        # g=net.Network(height=800, width=800, notebook=True)
+        # g.toggle_hide_edges_on_drag(True)
+        # #nx.draw(G)
+        # g.from_nx(G)
+        # g.show("example.html")
+        #name = graph_name + '.jpg'
+        #plt.savefig(name)
         self.build_model()
 
     def build_model(self):
@@ -110,6 +121,9 @@ class eni(object):
 
     # @profile
     def train(self):
+        ##### new
+        mse = 0
+        ####
         print('training')
         total_num = int((len(self.graph)-1)/self.args.batch_size)
         if total_num < 16:
@@ -134,9 +148,18 @@ class eni(object):
                     summary_str = self.sess.run(self.merged_summary, feed_dict=batch_data)
                     self.summary_writer.add_summary(summary_str, num)
                 num += 1
+
+                ##### new
+                dif_y = total_loss
+                dif_y_pow2 = pow(dif_y, 2)
+                mse += dif_y_pow2
+                #### end
             self.save_model(epoch)
             if epoch % 10 == 0:
                 self.save()
+        ##### new
+        print("====>  MSE(Y, Y^) =", float(mse/(self.args.epochs_to_train * total_num)))
+        ####
 
     def save_embeddings(self, save_path=None):
         print("Save embeddings in {}".format(save_path))

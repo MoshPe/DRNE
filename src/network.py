@@ -11,6 +11,7 @@ import utils
 def read_from_edgelist(filename, undirected=True, index_from_zero=True, with_head=True):
     line_num = 0
     graph = []
+    visual_graph = []
     with open(filename, 'r') as f:
         if with_head:
             l = f.readline().strip().split()
@@ -19,6 +20,7 @@ def read_from_edgelist(filename, undirected=True, index_from_zero=True, with_hea
         for line in f:
             ls = line.strip().split()
             a, b = int(ls[0])+int(index_from_zero), int(ls[1])+int(index_from_zero)
+            visual_graph.append([a, b])
             while len(graph)-1 < max(a, b):
                 graph.append([])
             if undirected:
@@ -28,7 +30,7 @@ def read_from_edgelist(filename, undirected=True, index_from_zero=True, with_hea
             if with_head and line_num % 100000 == 0:
                 process_bar.show_process(i=line_num)
     print("nodes: {}, edges: {}".format(len(graph), line_num))
-    return graph
+    return graph, visual_graph
 
 def get_degree(graph):
     degree = [[] for _ in range(len(graph))]

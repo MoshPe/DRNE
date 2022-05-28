@@ -27,13 +27,13 @@ def parse_args():
     return parser.parse_args()
 
 def main(args):
-    np.random.seed(int(time.time()) if args.seed == -1 else args.seed)
-    graph = network.read_from_edgelist(args.data_path, index_from_zero=args.index_from_0)
-    network.sort_graph_by_degree(graph)
+    np.random.seed(int(time.time()) if args.seed == -1 else args.seed) # 0: set the initial timer
+    graph, visual = network.read_from_edgelist(args.data_path, index_from_zero=args.index_from_0) # 1: get the graph, and th visual graph to presents.
+    network.sort_graph_by_degree(graph) # sort the graph by degree
     config = tf.ConfigProto(allow_soft_placement=True)
     config.gpu_options.allow_growth = True
     with tf.Graph().as_default(), tf.Session(config=config) as sess, tf.device('/gpu:2'):
-        alg = eni(graph, args, sess)
+        alg = eni(graph, args, sess, visual, args.data_path) # return instance of eni(- class)
         print("max degree: {}".format(alg.degree_max))
         alg.train()
         alg.save()
